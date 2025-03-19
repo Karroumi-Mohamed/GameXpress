@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redis;
 
 class CartController extends Controller
-{   
+{
     public function addItem(Request $request)
-    {  
+    {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
@@ -21,7 +21,7 @@ class CartController extends Controller
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
-        
+
         if ($product->stock < $validated['quantity']) {
             return response()->json([
                 'message' => 'Insufficient stock'
@@ -44,35 +44,6 @@ class CartController extends Controller
         ], 201);
     }
 
-    public function updateItem(Request $request, CartItem $cartItem)
-    {
-        $validated = $request->validate([
-            'quantity' => 'required|integer|min:1',
-        ]);
-
-        if ($cartItem->product->stock < $validated['quantity']) {
-            return response()->json([
-                'message' => 'Insufficient stock'
-            ], 400);
-        }
-
-        $cartItem->update([
-            'quantity' => $validated['quantity']
-        ]);
-
-        return response()->json([
-            'message' => 'Cart item updated',
-            'cart_item' => $cartItem
-        ]);
-    }
-
-    public function removeItem(CartItem $cartItem)
-    {
-        $cartItem->delete();
-        return response()->json([
-            'message' => 'Item removed from cart'
-        ]);
-    }
 
     public function cart(Request $request)
     {
@@ -84,7 +55,7 @@ class CartController extends Controller
     }
 
     private function getCart($sessionId): Cart
-    {        
+    {
         if (Auth::check()) {
             return Cart::firstOrCreate([
                 'user_id' => Auth::id()
