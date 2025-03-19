@@ -1230,13 +1230,13 @@
             "autoload": {
                 "files": [
                     "src/Illuminate/Collections/functions.php",
-                    "src/Illuminate/Collections/helpers.php",
+                    "src/Illuminate/Collections/TotalPriceHelper",
                     "src/Illuminate/Events/functions.php",
                     "src/Illuminate/Filesystem/functions.php",
-                    "src/Illuminate/Foundation/helpers.php",
+                    "src/Illuminate/Foundation/TotalPriceHelper",
                     "src/Illuminate/Log/functions.php",
                     "src/Illuminate/Support/functions.php",
-                    "src/Illuminate/Support/helpers.php"
+                    "src/Illuminate/Support/TotalPriceHelper"
                 ],
                 "psr-4": {
                     "Illuminate\\": "src/Illuminate/",
@@ -1311,7 +1311,7 @@
             },
             "autoload": {
                 "files": [
-                    "src/helpers.php"
+                    "src/TotalPriceHelper"
                 ],
                 "psr-4": {
                     "Laravel\\Prompts\\": "src/"
@@ -3391,7 +3391,7 @@
             },
             "autoload": {
                 "files": [
-                    "src/helpers.php"
+                    "src/TotalPriceHelper"
                 ],
                 "psr-4": {
                     "Spatie\\Permission\\": "src"
@@ -6355,7 +6355,7 @@
             "type": "library",
             "autoload": {
                 "files": [
-                    "library/helpers.php",
+                    "library/TotalPriceHelper",
                     "library/Mockery.php"
                 ],
                 "psr-4": {
