@@ -44,6 +44,53 @@ class CartController extends Controller
         ], 201);
     }
 
+    public function updateItem(Request $request, CartItem $cartItem)
+    {
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+
+
+        return response()->json([
+            'message' => 'Cart item updated',
+            'cart_item' => $cartItem
+        ]);
+    }
+
+    private function updateCartItem($cart, $item, $quantity)
+    {
+        if ($item->product->stock < $quantity) {
+            return response()->json([
+                'message' => 'Insufficient stock'
+            ], 400);
+        }
+
+        $item->update([
+            'quantity' => $quantity
+        ]);
+    }
+
+    private function addToCart($cart, $product, $quantity)
+    {
+        $cartItem = CartItem::updateOrCreate(
+            [
+                'cart_id' => $cart->id,
+                'product_id' => $product->id
+            ],
+            ['quantity' => $quantity + ($cart->items()->where('product_id', $product->id)->first()->quantity ?? 0)]
+        );
+
+        return $cartItem;
+    }
+
+    public function removeItem(CartItem $cartItem)
+    {
+        $cartItem->delete();
+        return response()->json([
+            'message' => 'Item removed from cart'
+        ]);
+    }
 
     public function cart(Request $request)
     {
