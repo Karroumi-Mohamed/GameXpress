@@ -10,6 +10,7 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Models\Cart;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\Auth;;
+use App\Http\Controllers\Api\V1\NotificationController;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Stripe\Checkout\Session;
 use Stripe\Payout;
 use Stripe\Stripe;
+
 
 class PaymentController extends Controller
 {
@@ -146,19 +148,24 @@ class PaymentController extends Controller
                 $product->stock -= $item->quantity;
                 $product->save();
             }
-            DB::commit();
 
-            return response()->json([
-                'message' => 'Payment completed successfully',
-                'order' => $order->fresh()->load('items')
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Checkout failed',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+            $payment->payment_details = $session;
+            $payment->save();
+            DB::commit();
+            $notificationController = new NotificationController();
+            $notificationController->sendOrderConfirmation($order);
+    
+           return response()->json([
+            'message' => 'Payment completed successfully',
+            'order' => $order->fresh()->load('items')
+        ], 200);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'message' => 'Checkout failed',
+            'error' => $e->getMessage()
+        ], 500);
+    }
     }
 
     public static function store(Order $order)
