@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth; // Import Auth facade
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException; // Import ValidationException
 use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
@@ -41,33 +43,42 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email|exists:users',
-            'password' => 'required'
+            'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
         }
 
+        $user = Auth::user();
         if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
-            return response()->json([
-                'message' => 'Unauthorized access'
-            ], 403);
+             Auth::logout();
+             $request->session()->invalidate();
+             $request->session()->regenerateToken();
+             return response()->json([
+                 'message' => 'Unauthorized access based on role.'
+             ], 403);
         }
 
-        $token = $user->createToken($request->email);
+
+        $request->session()->regenerate();
+
         return response()->json([
-            'user' => $user->load('roles'),
-            'token' => $token->plainTextToken
+             'message' => 'Login successful',
+             'user' => $user->load('roles')
         ], 200);
     }
 
-    public function logout(Request $request) {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json([
-            'message' => 'Logged out'
-        ], 200);
+    public function logout(Request $request)
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Logged out successfully'], 200);
     }
 }

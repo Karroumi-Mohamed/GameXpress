@@ -10,22 +10,25 @@ use App\Http\Controllers\Api\V1\Admin\ProductImageController;
 use App\Http\Controllers\Api\V1\Admin\RolePermissionController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\AuthController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
 
 Route::prefix('v1')->group(function () {
 
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::get('/user', function (Request $request) {
+        return response()->json($request->user());
+    })->middleware('auth:sanctum');
     Route::prefix('admin')->group(function () {
 
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::post('/register', [AuthController::class, 'register']);
 
         Route::middleware('auth:sanctum')->group(function () {
-            Route::post('/logout', [AuthController::class, 'logout']);
             Route::get('/dashboard', [DashboardController::class, 'index']);
 
             //charge
