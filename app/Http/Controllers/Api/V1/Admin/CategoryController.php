@@ -42,12 +42,12 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Category already exists.'], 409);
         }
 
-        if (!empty($validated['parent_id'])) {
+        if (!empty($validated['category_id'])) {
             if (SubCategory::where('slug', $validated['slug'])->exists()) {
                 return response()->json(['message' => 'Subcategory already exists.'], 409);
             }
-            SubCategory::create($validated);
-            return response()->json($validated, 201);
+            $subcategory = SubCategory::create($validated);
+            return response()->json($subcategory, 201);
         }
         $category = Category::create($validated);
         return response()->json($category, 201);

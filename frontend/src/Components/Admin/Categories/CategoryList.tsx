@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../lib/axios';
 import { toast } from 'react-toastify';
-import { TagIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TagIcon, PlusIcon, PencilSquareIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import Modal from '../../Common/Modal'; 
 import CategoryForm from './CategoryForm';
+import SubcategoryForm from './SubcategoryForm';
 
 interface SubCategory {
     id: number;
     name: string;
     slug: string;
+    products_count?: number;
+    category_id: number;
 }
 
 interface Category {
     id: number;
     name: string;
     slug: string;
-    sub_categories?: SubCategory[];
+    subCategories?: SubCategory[];  // Changed from sub_categories to match Laravel relationship name
+    subcategories?: SubCategory[];  // Alternative field name that might be used
+    sub_categories?: SubCategory[];  // Keep original just in case
     products_count?: number; 
     created_at: string;
 }
@@ -25,7 +30,11 @@ const CategoryList: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<Category | null>(null); 
+    const [isSabcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [editingSubcategory, setEditingSubcategory] = useState<SubCategory | null>(null);
+    const [currentCategoryId, setCurrentCategoryId] = useState<number | null>(null);
+    const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({}); 
 
     const fetchCategories = async () => {
         setIsLoading(true);
@@ -67,6 +76,50 @@ const CategoryList: React.FC = () => {
         fetchCategories();
     };
 
+    const handleSubcategorySaveSuccess = () => {
+        handleCloseSubcategoryModal();
+        fetchCategories();
+    };
+    
+    const toggleExpandCategory = (categoryId: number) => {
+        setExpandedCategories(prev => ({
+            ...prev,
+            [categoryId]: !prev[categoryId]
+        }));
+    };
+
+    const handleOpenAddSubcategoryModal = (categoryId: number) => {
+        setCurrentCategoryId(categoryId);
+        setEditingSubcategory(null);
+        setIsSubcategoryModalOpen(true);
+    };
+
+    const handleOpenEditSubcategoryModal = (categoryId: number, subcategory: SubCategory) => {
+        setCurrentCategoryId(categoryId);
+        setEditingSubcategory(subcategory);
+        setIsSubcategoryModalOpen(true);
+    };
+
+    const handleCloseSubcategoryModal = () => {
+        setIsSubcategoryModalOpen(false);
+        setEditingSubcategory(null);
+        setCurrentCategoryId(null);
+    };
+
+    const handleDeleteSubcategory = async (categoryId: number, subcategoryId: number) => {
+        if (!window.confirm('Are you sure you want to delete this subcategory? This might affect associated products.')) {
+            return;
+        }
+        try {
+            await api.delete(`/admin/categories/${categoryId}/subcategories/${subcategoryId}`);
+            toast.success('Subcategory deleted successfully!');
+            fetchCategories(); // Refresh the list
+        } catch (err: any) {
+            console.error("Failed to delete subcategory:", err);
+            const errorMessage = err.response?.data?.message || err.message || "Failed to delete subcategory.";
+            toast.error(errorMessage);
+        }
+    };
 
     const handleDelete = async (id: number) => {
         if (!window.confirm('Are you sure you want to delete this category? This might affect associated products.')) {
@@ -110,6 +163,7 @@ const CategoryList: React.FC = () => {
                 <table className="min-w-full divide-y divide-slate-100">
                     <thead className="bg-slate-50/75">
                         <tr>
+                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"></th>
                             <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
                             <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Slug</th>
                             <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Sub-categories</th>
@@ -122,43 +176,123 @@ const CategoryList: React.FC = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-100">
                         {categories.length > 0 ? categories.map((category) => (
-                            <tr key={category.id} className="hover:bg-indigo-50/30 transition-colors duration-150 group">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-semibold text-slate-900">{category.name}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">{category.slug}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {category.sub_categories?.length || 0}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center">
-                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        {category.products_count || 0}
-                                    </span>
-                                </td>
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                    {new Date(category.created_at).toLocaleDateString('en-CA')}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1">
-                                    <button
-                                        onClick={() => handleOpenEditModal(category)} 
-                                        title="Edit Category"
-                                        className="text-indigo-600 hover:text-indigo-800 inline-flex items-center p-1.5 hover:bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                                    >
-                                        <PencilSquareIcon className="h-5 w-5" />
-                                        <span className="sr-only">Edit</span>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(category.id)}
-                                        title="Delete Category"
-                                        className="text-red-600 hover:text-red-800 inline-flex items-center p-1.5 hover:bg-red-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                                    >
-                                        <TrashIcon className="h-5 w-5" />
-                                        <span className="sr-only">Delete</span>
-                                    </button>
-                                </td>
-                            </tr>
+                            <React.Fragment key={category.id}>
+                                <tr className="hover:bg-indigo-50/30 transition-colors duration-150 group">
+                                    <td className="px-3 py-4">
+                                        {(category.subcategories?.length || category.subCategories?.length || category.sub_categories?.length) > 0 && (
+                                            <button
+                                                onClick={() => toggleExpandCategory(category.id)}
+                                                className="p-1 rounded-full hover:bg-indigo-100"
+                                            >
+                                                {expandedCategories[category.id] ? (
+                                                    <ChevronUpIcon className="h-5 w-5 text-indigo-600" />
+                                                ) : (
+                                                    <ChevronDownIcon className="h-5 w-5 text-indigo-600" />
+                                                )}
+                                            </button>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-semibold text-slate-900">{category.name}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">{category.slug}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <div className="flex justify-center space-x-1">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {category.subcategories?.length || category.subCategories?.length || category.sub_categories?.length || 0}
+                                            </span>
+                                            <button 
+                                                onClick={() => handleOpenAddSubcategoryModal(category.id)}
+                                                className="text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                                                title="Add subcategory"
+                                            >
+                                                <PlusIcon className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            {category.products_count || 0}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                        {new Date(category.created_at).toLocaleDateString('en-CA')}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1">
+                                        <button
+                                            onClick={() => handleOpenEditModal(category)} 
+                                            title="Edit Category"
+                                            className="text-indigo-600 hover:text-indigo-800 inline-flex items-center p-1.5 hover:bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                                        >
+                                            <PencilSquareIcon className="h-5 w-5" />
+                                            <span className="sr-only">Edit</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(category.id)}
+                                            title="Delete Category"
+                                            className="text-red-600 hover:text-red-800 inline-flex items-center p-1.5 hover:bg-red-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                                        >
+                                            <TrashIcon className="h-5 w-5" />
+                                            <span className="sr-only">Delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                {/* Subcategories expandable row */}
+                                {expandedCategories[category.id] && (
+                                    <tr className="bg-slate-50/50">
+                                        <td colSpan={7} className="px-4 py-3">
+                                            <div className="shadow-sm rounded-lg overflow-hidden border border-slate-200">
+                                                <table className="min-w-full divide-y divide-slate-100">
+                                                    <thead className="bg-indigo-50">
+                                                        <tr>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Subcategory Name</th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Slug</th>
+                                                            <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Products</th>
+                                                            <th scope="col" className="relative px-6 py-3">
+                                                                <span className="sr-only">Actions</span>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="bg-white divide-y divide-slate-100">
+                                                        {(category.subcategories || category.subCategories || category.sub_categories || []).map((subcategory) => (
+                                                            <tr key={subcategory.id} className="hover:bg-indigo-50/30">
+                                                                <td className="px-6 py-3 whitespace-nowrap">
+                                                                    <div className="text-sm font-medium text-slate-900">{subcategory.name}</div>
+                                                                </td>
+                                                                <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-500 font-mono">{subcategory.slug}</td>
+                                                                <td className="px-6 py-3 whitespace-nowrap text-center">
+                                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                        {subcategory.products_count || 0}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-6 py-3 whitespace-nowrap text-right text-sm font-medium space-x-1">
+                                                                    <button
+                                                                        onClick={() => handleOpenEditSubcategoryModal(category.id, subcategory)}
+                                                                        title="Edit Subcategory"
+                                                                        className="text-indigo-600 hover:text-indigo-800 inline-flex items-center p-1.5 hover:bg-indigo-100 rounded-lg"
+                                                                    >
+                                                                        <PencilSquareIcon className="h-4 w-4" />
+                                                                        <span className="sr-only">Edit</span>
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteSubcategory(category.id, subcategory.id)}
+                                                                        title="Delete Subcategory"
+                                                                        className="text-red-600 hover:text-red-800 inline-flex items-center p-1.5 hover:bg-red-100 rounded-lg"
+                                                                    >
+                                                                        <TrashIcon className="h-4 w-4" />
+                                                                        <span className="sr-only">Delete</span>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
                         )) : (
                             <tr>
                                 <td colSpan={6} className="px-6 py-16 text-center">
@@ -191,6 +325,20 @@ const CategoryList: React.FC = () => {
                     categoryToEdit={editingCategory}
                     onSaveSuccess={handleSaveSuccess}
                     onCancel={handleCloseModal}
+                />
+             </Modal>
+
+             <Modal
+                isOpen={isSabcategoryModalOpen}
+                onClose={handleCloseSubcategoryModal}
+                title={editingSubcategory ? 'Edit Subcategory' : 'Add New Subcategory'}
+                size="md" 
+             >
+                <SubcategoryForm
+                    categoryId={currentCategoryId || 0}
+                    subcategoryToEdit={editingSubcategory}
+                    onSaveSuccess={handleSubcategorySaveSuccess}
+                    onCancel={handleCloseSubcategoryModal}
                 />
              </Modal>
         </div>
