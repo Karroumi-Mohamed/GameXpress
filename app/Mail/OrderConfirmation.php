@@ -32,6 +32,6 @@ class OrderConfirmation extends Mailable
     public function build()
     {
         return $this->subject('Order Confirmation - #' . $this->order->id)
-                    ->view('emails.order_confirmation'); // Blade view for the email
+                    ->view('emails.order_confirmation'); 
     }
 }

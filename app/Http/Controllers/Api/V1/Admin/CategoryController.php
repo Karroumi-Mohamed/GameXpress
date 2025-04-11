@@ -22,16 +22,16 @@ class CategoryController extends Controller
     public function index()
     {
 
-        $categories = Category::with('subcategories')->paginate(10);
+        $categories = Category::with('subcategories')->paginate(999);
         return response()->json($categories);
     }
 
     public function indexSubcategory(Category $category)
     {
-        $subcategories = $category->subcategories()->paginate(10);
+        $subcategories = $category->subcategories()->paginate(999);
         return response()->json($subcategories);
     }
-    
+
     public function store(StoreCategoryRequest $request)
     {
         $validated = $request->validated();
@@ -67,7 +67,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validated();
         $validated['slug'] = Str::slug($validated['name']);
-        
+
         if (Category::where('slug', $validated['slug'])->where('id', '<>', $category->id)->exists()) {
             return response()->json(['message' => 'Category already exists.'], 409);
         }
@@ -75,16 +75,16 @@ class CategoryController extends Controller
         $category->update($validated);
         return response()->json($category);
     }
-    
+
     public function updateSubcategory(UpdateCategoryRequest $request, Category $category, SubCategory $subcategory)
     {
         $validated = $request->validated();
         $validated['slug'] = Str::slug($validated['name']);
-        
+
         if (SubCategory::where('slug', $validated['slug'])->where('id', '<>', $subcategory->id)->exists()) {
             return response()->json(['message' => 'Subcategory already exists.'], 409);
         }
-        
+
         $subcategory->update($validated);
         return response()->json($subcategory);
     }

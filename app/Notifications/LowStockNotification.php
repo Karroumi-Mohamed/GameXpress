@@ -27,7 +27,7 @@ class LowStockNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -48,8 +48,14 @@ class LowStockNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        // Data to be stored in the 'data' column of the notifications table
         return [
-            //
+            'product_id' => $this->product->id,
+            'product_name' => $this->product->name,
+            'current_stock' => $this->product->stock,
+            'message' => "Stock for {$this->product->name} is running low ({$this->product->stock} units left).",
+            // Optional: Add a link relevant to the admin context
+            'link' => '/admin/products/' . $this->product->id . '/edit',
         ];
     }
 }

@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import api from '../../../lib/axios';
+import NotificationsDropdown from './NotificationsDropdown';
 import {
+  BellIcon,
   ChartBarIcon,
   ShoppingBagIcon,
   TagIcon,
@@ -23,6 +28,47 @@ const AdminLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [productSubmenuOpen, setProductSubmenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await api.get('/admin/notifications?page=1');
+      setNotifications(response.data.data || []);
+      setUnreadCount(response.data.data?.filter((n: any) => !n.read_at).length || 0);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+   useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [notificationRef]);
+
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await api.patch(`/admin/notifications/${id}/read`);
+      fetchNotifications();
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
 
   const navItems = [
     {
@@ -85,6 +131,34 @@ const AdminLayout: React.FC = () => {
           )}
         </button>
       </div>
+
+      <div className="hidden lg:flex fixed top-0 right-0 h-16 bg-white shadow-sm border-b border-slate-100 z-20" style={{ left: '16rem' }}>
+         <div className="flex-1 flex justify-end items-center px-6">
+            <div className="relative" ref={notificationRef}>
+               <button
+                  onClick={() => setNotificationsOpen(!notificationsOpen)}
+                  className="relative p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+                  id="notifications-menu-button"
+                  aria-expanded={notificationsOpen}
+                  aria-haspopup="true"
+               >
+                  <span className="sr-only">View notifications</span>
+                  <BellIcon className="h-6 w-6" aria-hidden="true" />
+                  {unreadCount > 0 && (
+                     <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                  )}
+               </button>
+               {notificationsOpen && (
+                  <NotificationsDropdown
+                     notifications={notifications}
+                     onMarkAsRead={handleMarkAsRead}
+                     onClose={() => setNotificationsOpen(false)}
+                  />
+               )}
+            </div>
+         </div>
+      </div>
+
 
       {sidebarOpen && (
         <div
@@ -223,10 +297,22 @@ const AdminLayout: React.FC = () => {
         </div>
       </div>
 
-      <div className={`lg:pl-64 min-h-screen`}>
-        <main className="p-0 min-h-screen">
+      <div className={`lg:pl-64 min-h-screen pt-16`}>
+        <main className="min-h-[calc(100vh-4rem)]">
           <Outlet />
         </main>
+        <ToastContainer
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
     </div>
   );

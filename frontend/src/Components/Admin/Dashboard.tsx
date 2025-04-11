@@ -163,14 +163,6 @@ const AdminDashboard: React.FC = () => {
         { name: 'Out of Stock', value: stats.out_of_stock_products, color: 'var(--color-danger-500)' }
     ];
 
-    const stockStatusChartData = [
-        {
-            name: 'Stock Status',
-            inStock: inStockCount,
-            lowStock: stats.low_stock_products,
-            outOfStock: stats.out_of_stock_products
-        }
-    ];
 
     const stockAlertChartData = stats.stock_alerts.map(product => ({
         name: product.name.length > 18 ? product.name.substring(0, 18) + '...' : product.name,
@@ -305,7 +297,7 @@ const AdminDashboard: React.FC = () => {
                                 iconType="circle"
                                 iconSize={10}
                                 wrapperStyle={{ paddingTop: '20px' }}
-                                formatter={(value, entry) => <span className="text-slate-600 text-sm ml-1">{value}</span>}
+                                formatter={(value) => <span className="text-slate-600 text-sm ml-1">{value}</span>}
                             />
                         </PieChart>
                     </ResponsiveContainer>
