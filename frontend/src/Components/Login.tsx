@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../lib/axios';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 export default function Login() {
     const [email, setemail] = useState('');
     const [password, setpassword] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [user, setUser] = useState<any | null>(null);
+    // Remove local user state, context will manage it
+    // const [user, setUser] = useState<any | null>(null);
+    const auth = useAuth(); // Get auth context
+    const navigate = useNavigate(); // Get navigate function
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError(null);
-        setUser(null);
+        // setUser(null); // No longer needed
 
         const data = {
             email: email,
@@ -27,7 +32,8 @@ export default function Login() {
 
             const userResponse = await api.get('/user');
             console.log('User data:', userResponse.data);
-            setUser(userResponse.data);
+            auth.setUser(userResponse.data); // Set user in context
+            navigate('/'); // Redirect to home page
 
         } catch (err: any) {
             console.error('Authentication failed:', err);
@@ -91,12 +97,7 @@ export default function Login() {
                     Login
                 </button>
                  {error && <p className="text-red-500 text-xs italic mt-4">{error}</p>}
-                 {user && (
-                    <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                        <h3 className="font-bold">Login Success! User:</h3>
-                        <pre className="text-sm whitespace-pre-wrap break-words">{JSON.stringify(user, null, 2)}</pre>
-                    </div>
-                 )}
+                 {/* Remove local user display logic */}
             </form>
         </div>
     );

@@ -23,7 +23,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
     Route::get('/user', function (Request $request) {
-        return response()->json($request->user());
+        $user = $request->user();
+        // Eager load roles and permissions to send to frontend
+        $user->load(['roles', 'permissions']);
+        return response()->json($user);
     })->middleware('auth:sanctum');
     Route::prefix('admin')->group(function () {
 

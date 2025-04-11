@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+:root {
+  --color-brand-500: 255 90 31; /* RGB values from your config */
+  --color-accent-500: 139 92 246;
+  --color-blue-500: 59 130 246;
+  --color-success-500: 16 185 129;
+  --color-warning-500: 245 158 11;
+  --color-danger-500: 239 68 68;
+
+  --color-brand-100: 254 236 220;
+  --color-accent-100: 237 233 254;
+  --color-blue-100: 219 234 254;
+  --color-success-100: 209 250 229;
+  --color-warning-100: 254 243 199;
+  --color-danger-100: 254 226 226;
+
+  --color-success-700: 4 120 87;
+  --color-warning-700: 180 83 9;
+  --color-danger-700: 185 28 28;
+}
+
+body {
+  @apply font-sans antialiased;
+}
