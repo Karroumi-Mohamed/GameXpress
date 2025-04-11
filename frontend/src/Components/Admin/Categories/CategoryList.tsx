@@ -179,7 +179,7 @@ const CategoryList: React.FC = () => {
                             <React.Fragment key={category.id}>
                                 <tr className="hover:bg-indigo-50/30 transition-colors duration-150 group">
                                     <td className="px-3 py-4">
-                                        {(category.subcategories?.length || category.subCategories?.length || category.sub_categories?.length) > 0 && (
+                                        {(category.subcategories ?? category.subCategories ?? category.sub_categories ?? []).length > 0 && (
                                             <button
                                                 onClick={() => toggleExpandCategory(category.id)}
                                                 className="p-1 rounded-full hover:bg-indigo-100"
@@ -255,7 +255,7 @@ const CategoryList: React.FC = () => {
                                                         </tr>
                                                     </thead>
                                                     <tbody className="bg-white divide-y divide-slate-100">
-                                                        {(category.subcategories || category.subCategories || category.sub_categories || []).map((subcategory) => (
+                                                        {(category.subcategories || category.subCategories || category.sub_categories || []).filter(Boolean).map((subcategory) => (
                                                             <tr key={subcategory.id} className="hover:bg-indigo-50/30">
                                                                 <td className="px-6 py-3 whitespace-nowrap">
                                                                     <div className="text-sm font-medium text-slate-900">{subcategory.name}</div>

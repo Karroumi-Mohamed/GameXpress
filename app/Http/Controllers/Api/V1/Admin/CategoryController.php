@@ -21,8 +21,12 @@ class CategoryController extends Controller
 
     public function index()
     {
-
-        $categories = Category::with('subcategories')->paginate(999);
+        $categories = Category::with(['subcategories' => function ($query) {
+            $query->withCount('products');
+        }])
+        ->withCount('products')
+        ->paginate(999);
+        
         return response()->json($categories);
     }
 
@@ -55,7 +59,9 @@ class CategoryController extends Controller
 
     public function show(Category $category)
     {
-        return response()->json($category->load('subcategories'));
+        return response()->json($category->loadCount('products')->load(['subcategories' => function($query) {
+            $query->withCount('products');
+        }]));
     }
 
     public function showSubcategory(Category $category, SubCategory $subcategory)
