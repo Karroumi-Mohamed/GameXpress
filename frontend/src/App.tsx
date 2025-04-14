@@ -5,6 +5,7 @@ import ProtectedRoute from './Components/ProtectedRoute';
 import AdminDashboard from './Components/Admin/Dashboard';
 import AdminLayout from './Components/Admin/Layout/AdminLayout';
 import CategoryList from './Components/Admin/Categories/CategoryList';
+import ProductList from './Components/Admin/Products/ProductList';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="categories" element={<CategoryList />} />
+          <Route path="products" element={<ProductList />} />
         </Route>
       </Route>
     </Routes>

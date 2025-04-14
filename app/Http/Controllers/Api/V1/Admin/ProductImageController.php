@@ -40,7 +40,7 @@ class ProductImageController extends Controller
 
             $product->images()->create([
                 'image_url' => $path,
-                'is_primary' => $product->images()->count() === 0 // Make primary if first image
+                'is_primary' => $product->images()->count() === 0
             ]);
         }
 
@@ -50,7 +50,7 @@ class ProductImageController extends Controller
         ], 201);
     }
 
-    public function destroy(ProductImage $image)
+    public function destroy(Product $product, ProductImage $image)
     {
         if ($image->product->images()->count() === 1) {
             return response()->json([
@@ -74,8 +74,6 @@ class ProductImageController extends Controller
             'message' => 'Image deleted successfully'
         ]);
     }
-
-
 
     public function setPrimary(Product $product, ProductImage $image)
     {
