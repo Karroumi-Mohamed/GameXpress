@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['*', 'sanctum/csrf-cookie'],
     'allowed_origins' => ['http://127.0.0.1:5173'],
     'allowed_methods' => ['*'],
     'allowed_headers' => ['*'],
