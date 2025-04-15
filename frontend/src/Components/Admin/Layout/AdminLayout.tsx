@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import {
-  // Dashboard icons
   ChartBarIcon,
   ShoppingBagIcon,
   TagIcon,
@@ -19,8 +18,6 @@ import {
   ShieldCheckIcon,
   BellIcon,
   MagnifyingGlassIcon,
-  SunIcon,
-  MoonIcon
 } from '@heroicons/react/24/outline';
 
 const AdminLayout: React.FC = () => {
@@ -31,10 +28,9 @@ const AdminLayout: React.FC = () => {
   const [productSubmenuOpen, setProductSubmenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  // const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Track scroll for fancy header effects
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -43,7 +39,6 @@ const AdminLayout: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Navigation menu items
   const navItems = [
     {
       name: 'Dashboard',
@@ -76,6 +71,12 @@ const AdminLayout: React.FC = () => {
       current: location.pathname.includes('/admin/users')
     },
     {
+      name: 'Roles & Permissions',
+      icon: ShieldCheckIcon,
+      href: '/admin/roles',
+      current: location.pathname.includes('/admin/roles')
+    },
+    {
       name: 'Settings',
       icon: Cog6ToothIcon,
       href: '/admin/settings',
@@ -83,44 +84,34 @@ const AdminLayout: React.FC = () => {
     }
   ];
 
-  // Sample notifications for fancy UI
   const notifications = [
     { id: 1, title: "New order received", time: "5 minutes ago", read: false },
     { id: 2, title: "Product stock low: Gaming Headset XZ900", time: "1 hour ago", read: false },
     { id: 3, title: "System update completed", time: "3 hours ago", read: true }
   ];
 
-  // Toggle submenu
   const toggleSubmenu = () => {
     setProductSubmenuOpen(!productSubmenuOpen);
   };
 
-  // Toggle sidebar on mobile
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-
-  // Handle search open
+/*
   const handleSearchOpen = () => {
     setSearchOpen(true);
-    // Close other popups
     setNotificationsOpen(false);
   };
-
-  // Handle notification open
+*/
   const handleNotificationsToggle = () => {
     setNotificationsOpen(!notificationsOpen);
-    // Close search if open
     if (searchOpen) setSearchOpen(false);
   };
 
-  // Handle theme toggle
-  const toggleDarkMode = () => {
+  /* const toggleDarkMode = () => {
     setDarkMode(!darkMode);
-    // Here you would also apply dark mode class to document if implementing
-  };
+  }; */
 
-  // Handle logout with confirmation
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to log out?')) {
       logout();
@@ -130,10 +121,8 @@ const AdminLayout: React.FC = () => {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 transition-all duration-300`}>
-      {/* Top header bar */}
       <header className={`fixed top-0 right-0 w-full lg:w-[calc(100%-16rem)] z-20 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-md' : 'bg-transparent'}`}>
         <div className="flex items-center justify-between px-4 lg:px-8 py-4">
-          {/* Mobile menu button */}
           <button
             onClick={toggleSidebar}
             className="lg:hidden rounded-full p-2 bg-white shadow-md text-slate-700 hover:bg-brand-50 transition-colors duration-200"
@@ -145,21 +134,18 @@ const AdminLayout: React.FC = () => {
             )}
           </button>
 
-          {/* Search box */}
           <div className="hidden md:flex items-center relative max-w-md flex-1 mx-4 lg:mx-8">
             <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Search..." 
+            <input
+              type="text"
+              placeholder="Search..."
               className="pl-10 pr-4 py-2 w-full rounded-full border border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 outline-none transition-all"
             />
           </div>
 
-          {/* Right side buttons */}
           <div className="flex items-center space-x-4">
-            {/* Notifications */}
             <div className="relative">
-              <button 
+              <button
                 onClick={handleNotificationsToggle}
                 className="rounded-full p-2 bg-white shadow-sm text-slate-600 hover:bg-slate-100 relative"
                 title="Notifications"
@@ -168,7 +154,6 @@ const AdminLayout: React.FC = () => {
                 <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-brand-500 ring-2 ring-white"></span>
               </button>
 
-              {/* Notifications dropdown */}
               {notificationsOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50 border border-slate-200 animate-fadeIn">
                   <div className="px-4 py-2 border-b border-slate-100">
@@ -205,27 +190,22 @@ const AdminLayout: React.FC = () => {
                 </div>
               )}
             </div>
-
-
           </div>
         </div>
       </header>
 
-      {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm lg:hidden z-30"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
 
-      {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } bg-white lg:bg-white/95 backdrop-filter backdrop-blur-lg border-r border-slate-100 w-72 lg:w-64 shadow-lg lg:shadow-md`}
       >
-        {/* Sidebar header */}
         <div className="p-6 border-b border-slate-100">
           <div className="flex items-center justify-center space-x-2">
             <div className="p-1.5 rounded-lg bg-gradient-to-r from-brand-500 to-accent-500">
@@ -240,7 +220,6 @@ const AdminLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Sidebar content */}
         <div className="overflow-y-auto h-[calc(100vh-10rem)]">
           <nav className="mt-6 px-4 space-y-2">
             {navItems.map((item) => (
@@ -302,32 +281,31 @@ const AdminLayout: React.FC = () => {
             ))}
           </nav>
 
-          {/* Quick shortcuts section */}
           <div className="mt-10 px-6">
             <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Shortcuts</h3>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <Link 
+              <Link
                 to="/"
                 className="flex flex-col items-center justify-center p-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 hover:shadow-sm transition-all duration-150"
               >
                 <HomeIcon className="h-6 w-6 text-slate-600 mb-1" />
                 <span className="text-xs text-slate-600 font-medium">Store</span>
               </Link>
-              <Link 
+              <Link
                 to="/admin/products/add"
                 className="flex flex-col items-center justify-center p-3 bg-gradient-to-br from-brand-50 to-brand-100 rounded-xl border border-brand-200 hover:shadow-sm transition-all duration-150"
               >
                 <CubeIcon className="h-6 w-6 text-brand-600 mb-1" />
                 <span className="text-xs text-brand-700 font-medium">Add Product</span>
               </Link>
-              <Link 
+              <Link
                 to="/admin/products/images"
                 className="flex flex-col items-center justify-center p-3 bg-gradient-to-br from-accent-50 to-accent-100 rounded-xl border border-accent-200 hover:shadow-sm transition-all duration-150"
               >
                 <PhotoIcon className="h-6 w-6 text-accent-600 mb-1" />
                 <span className="text-xs text-accent-700 font-medium">Images</span>
               </Link>
-              <Link 
+              <Link
                 to="/admin/settings"
                 className="flex flex-col items-center justify-center p-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 hover:shadow-sm transition-all duration-150"
               >
@@ -338,7 +316,6 @@ const AdminLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Sidebar footer with user info */}
         <div className="absolute bottom-0 w-full border-t border-slate-100 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -372,7 +349,6 @@ const AdminLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Main content area */}
       <div className="lg:pl-64 pt-16 min-h-screen">
         <main className="p-0 min-h-screen">
           <Outlet />

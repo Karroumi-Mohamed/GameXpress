@@ -30,7 +30,12 @@ Route::prefix('v1')->group(function () {
         $user = $request->user();
         $user->load(['roles', 'permissions']);
         return response()->json($user);
+
     })->middleware('auth:sanctum');
+        Route::get('products', [AdminProductController::class, 'index']);
+        Route::get('products/{product}', [AdminProductController::class, 'show']);
+    
+
     Route::prefix('admin')->group(function () {
 
 
@@ -43,13 +48,14 @@ Route::prefix('v1')->group(function () {
                 Route::delete('categories/{category}/subcategories/{subcategory}', [AdminCategoryController::class, 'destroySubcategory']);
                 Route::get('categories/{category}/subcategories', [AdminCategoryController::class, 'indexSubcategory']);
                 Route::get('categories/{category}/subcategories/{subcategory}', [AdminCategoryController::class, 'showSubcategory']);
-                Route::apiResource('products', AdminProductController::class);
+                Route::apiResource('products', AdminProductController::class)->except(['show', 'index']);
                 Route::post('products/{product}/images', [AdminProductImageController::class, 'store']);
                 Route::delete('products/{product}/images/{image}', [AdminProductImageController::class, 'destroy']);
                 Route::put('products/{product}/images/{image}/set-primary', [AdminProductImageController::class, 'setPrimary']);
                 Route::get('products/{product}/images', [AdminProductImageController::class, 'index']);
                 Route::get('products/{product}/images/{image}', [AdminProductImageController::class, 'show']);
             });
+            
 
             Route::middleware('role:user_manager|super_admin')->group(function () {
                 Route::apiResource('users', AdminUserController::class);
