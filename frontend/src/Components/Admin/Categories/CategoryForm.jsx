@@ -1,42 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-interface Category {
-    id: number;
-    name: string;
-}
 
-interface CategoryFormData {
-    name: string;
-}
-
-interface CategoryFormProps {
-    categoryToEdit?: Category | null;
-    onSaveSuccess: () => void;
-    onCancel: () => void;
-}
-
-const CategoryForm: React.FC<CategoryFormProps> = ({ categoryToEdit, onSaveSuccess, onCancel }) => {
+const CategoryForm = ({ categoryToEdit, onSaveSuccess, onCancel }) => {
     const isEditing = Boolean(categoryToEdit);
-    const [formData, setFormData] = useState<CategoryFormData>({
+    const [formData, setFormData] = useState({
         name: categoryToEdit?.name || '',
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string[]>>({});
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         setFormData({ name: categoryToEdit?.name || '' });
         setErrors({});
     }, [categoryToEdit]);
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
         setErrors({});
@@ -50,7 +36,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ categoryToEdit, onSaveSucce
                 toast.success('Category created successfully!');
             }
             onSaveSuccess();
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to save category:", err);
             if (err.response?.status === 422) {
                 setErrors(err.response.data.errors);

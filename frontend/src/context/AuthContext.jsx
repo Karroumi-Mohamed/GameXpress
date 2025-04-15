@@ -1,22 +1,13 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
-import api from '../lib/axios';
+import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
+import api from '../lib/axios.js';
 
-interface AuthContextType {
-  user: any | null;
-  setUser: (user: any | null) => void;
-  logout: () => Promise<void>;
-  isLoading: boolean;
-}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(true); 
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -59,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');

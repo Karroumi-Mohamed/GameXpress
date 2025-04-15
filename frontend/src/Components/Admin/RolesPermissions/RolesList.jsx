@@ -1,34 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { ShieldCheckIcon, LockClosedIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
-import Modal from '../../Common/Modal';
-import PermissionAssignmentForm from './PermissionAssignmentForm';
+import Modal from '../../Common/Modal.jsx';
+import PermissionAssignmentForm from './PermissionAssignmentForm.jsx';
 
-interface Permission {
-    id: number;
-    name: string;
-}
 
-interface Role {
-    id: number;
-    name: string;
-    permissions: Permission[];
-}
-
-const RolesList: React.FC = () => {
-    const [roles, setRoles] = useState<Role[]>([]);
+const RolesList = () => {
+    const [roles, setRoles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+    const [selectedRole, setSelectedRole] = useState(null);
 
     const fetchRoles = async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await api.get<{ data: Role[] }>('/admin/roles');
+            const response = await api.get('/admin/roles');
             setRoles(response.data.data || response.data || []);
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to fetch roles:", err);
             setError("Failed to load roles. Check console for details.");
         } finally {
@@ -40,7 +30,7 @@ const RolesList: React.FC = () => {
         fetchRoles();
     }, []);
 
-    const handleOpenEditModal = (role: Role) => {
+    const handleOpenEditModal = (role) => {
         setSelectedRole(role);
         setIsModalOpen(true);
     };

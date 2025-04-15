@@ -1,48 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { TagIcon, PlusIcon, PencilSquareIcon, TrashIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import Modal from '../../Common/Modal'; 
-import CategoryForm from './CategoryForm';
-import SubcategoryForm from './SubcategoryForm';
+import Modal from '../../Common/Modal.jsx'; 
+import CategoryForm from './CategoryForm.jsx';
+import SubcategoryForm from './SubcategoryForm.jsx';
 
-interface SubCategory {
-    id: number;
-    name: string;
-    slug: string;
-    products_count?: number;
-    category_id: number;
-}
 
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
-    subCategories?: SubCategory[];  // Changed from sub_categories to match Laravel relationship name
-    subcategories?: SubCategory[];  // Alternative field name that might be used
-    sub_categories?: SubCategory[];  // Keep original just in case
-    products_count?: number; 
-    created_at: string;
-}
-
-const CategoryList: React.FC = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
+const CategoryList = () => {
+    const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSabcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-    const [editingSubcategory, setEditingSubcategory] = useState<SubCategory | null>(null);
-    const [currentCategoryId, setCurrentCategoryId] = useState<number | null>(null);
-    const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({}); 
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [editingSubcategory, setEditingSubcategory] = useState(null);
+    const [currentCategoryId, setCurrentCategoryId] = useState(null);
+    const [expandedCategories, setExpandedCategories] = useState({}); 
 
     const fetchCategories = async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await api.get<{ data: Category[] }>('/admin/categories');
+            const response = await api.get('/admin/categories');
             setCategories(response.data.data || []);
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to fetch categories:", err);
             const errorMessage = err.response?.data?.message || err.message || "Failed to load categories.";
             setError(errorMessage);
@@ -61,7 +43,7 @@ const CategoryList: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleOpenEditModal = (category: Category) => {
+    const handleOpenEditModal = (category) => {
         setEditingCategory(category);
         setIsModalOpen(true);
     };
@@ -81,20 +63,20 @@ const CategoryList: React.FC = () => {
         fetchCategories();
     };
     
-    const toggleExpandCategory = (categoryId: number) => {
+    const toggleExpandCategory = (categoryId) => {
         setExpandedCategories(prev => ({
             ...prev,
             [categoryId]: !prev[categoryId]
         }));
     };
 
-    const handleOpenAddSubcategoryModal = (categoryId: number) => {
+    const handleOpenAddSubcategoryModal = (categoryId) => {
         setCurrentCategoryId(categoryId);
         setEditingSubcategory(null);
         setIsSubcategoryModalOpen(true);
     };
 
-    const handleOpenEditSubcategoryModal = (categoryId: number, subcategory: SubCategory) => {
+    const handleOpenEditSubcategoryModal = (categoryId, subcategory) => {
         setCurrentCategoryId(categoryId);
         setEditingSubcategory(subcategory);
         setIsSubcategoryModalOpen(true);
@@ -106,7 +88,7 @@ const CategoryList: React.FC = () => {
         setCurrentCategoryId(null);
     };
 
-    const handleDeleteSubcategory = async (categoryId: number, subcategoryId: number) => {
+    const handleDeleteSubcategory = async (categoryId, subcategoryId) => {
         if (!window.confirm('Are you sure you want to delete this subcategory? This might affect associated products.')) {
             return;
         }
@@ -114,14 +96,14 @@ const CategoryList: React.FC = () => {
             await api.delete(`/admin/categories/${categoryId}/subcategories/${subcategoryId}`);
             toast.success('Subcategory deleted successfully!');
             fetchCategories(); // Refresh the list
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to delete subcategory:", err);
             const errorMessage = err.response?.data?.message || err.message || "Failed to delete subcategory.";
             toast.error(errorMessage);
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this category? This might affect associated products.')) {
             return;
         }
@@ -129,7 +111,7 @@ const CategoryList: React.FC = () => {
             await api.delete(`/admin/categories/${id}`);
             toast.success('Category deleted successfully!');
             fetchCategories(); // Refresh the list
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to delete category:", err);
             const errorMessage = err.response?.data?.message || err.message || "Failed to delete category.";
             toast.error(errorMessage);

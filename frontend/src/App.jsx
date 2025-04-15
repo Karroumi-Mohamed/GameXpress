@@ -1,15 +1,16 @@
+
 import { Route, Routes } from 'react-router-dom';
-import Login from './Components/Login';
-import Register from './Components/Register';
-import ProtectedRoute from './Components/ProtectedRoute';
-import AdminDashboard from './Components/Admin/Dashboard';
-import AdminLayout from './Components/Admin/Layout/AdminLayout';
-import CategoryList from './Components/Admin/Categories/CategoryList';
-import ProductList from './Components/Admin/Products/ProductList';
-import UserList from './Components/Admin/Users/UserList';
-import RolesList from './Components/Admin/RolesPermissions/RolesList';
-import ProductListPage from './Components/Frontoffice/Products/ProductListPage'; // Import Frontoffice List
-import ProductDetailPage from './Components/Frontoffice/Products/ProductDetailPage'; // Import Frontoffice Detail
+import Login from './Components/Login.jsx';
+import Register from './Components/Register.jsx';
+import ProtectedRoute from './Components/ProtectedRoute.jsx';
+import AdminDashboard from './Components/Admin/Dashboard.jsx';
+import AdminLayout from './Components/Admin/Layout/AdminLayout.jsx';
+import CategoryList from './Components/Admin/Categories/CategoryList.jsx';
+import ProductList from './Components/Admin/Products/ProductList.jsx';
+import UserList from './Components/Admin/Users/UserList.jsx';
+import RolesList from './Components/Admin/RolesPermissions/RolesList.jsx';
+import ProductListPage from './Components/Frontoffice/Products/ProductListPage.jsx'; // Import Frontoffice List
+import ProductDetailPage from './Components/Frontoffice/Products/ProductDetailPage.jsx'; // Import Frontoffice Detail
 
 function App() {
   return (

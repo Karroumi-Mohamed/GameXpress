@@ -1,29 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { Link } from 'react-router-dom';
 import { CubeIcon } from '@heroicons/react/24/outline';
 
-interface ProductImage {
-    id: number;
-    image_url: string;
-    is_primary: boolean;
-}
 
-interface Product {
-    id: number;
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    images: ProductImage[];
-}
-
-const ProductListPage: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
+const ProductListPage = () => {
+    const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
 
-    const getPrimaryImageUrl = (images: ProductImage[]): string | null => {
+    const getPrimaryImageUrl = (images) => {
         const primary = images?.find(img => img.is_primary);
         const firstImage = images?.[0];
         const imageUrlPath = primary?.image_url || firstImage?.image_url;
@@ -39,14 +25,14 @@ const ProductListPage: React.FC = () => {
 
     useEffect(() => {
         const fetchProducts = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await api.get<{ data: Product[] }>('/products');
-                setProducts(response.data.data || response.data || []);
-            } catch (err: any) {
-                console.error("Failed to fetch products:", err);
-                setError("Failed to load products. Please try again later.");
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await api.get('/products');
+            setProducts(response.data.data || response.data || []);
+        } catch (err) {
+            console.error("Failed to fetch products:", err);
+            setError("Failed to load products. Please try again later.");
             } finally {
                 setIsLoading(false);
             }

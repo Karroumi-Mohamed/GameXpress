@@ -1,47 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { useParams, Link } from 'react-router-dom';
 import { CubeIcon, ArrowLeftIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 
-interface ProductImage {
-    id: number;
-    image_url: string;
-    is_primary: boolean;
-}
 
-interface SubCategory {
-    id: number;
-    name: string;
-    slug: string;
-}
-
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
-}
-
-interface Product {
-    id: number;
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    stock: number;
-    status: 'available' | 'unavailable';
-    category: Category;
-    subcategory?: SubCategory;
-    images: ProductImage[];
-}
-
-const ProductDetailPage: React.FC = () => {
-    const { slug } = useParams<{ slug: string }>();
-    const [product, setProduct] = useState<Product | null>(null);
+const ProductDetailPage = () => {
+    const { slug } = useParams();
+    const [product, setProduct] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [error, setError] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
 
-    const getFullImageUrl = (imageUrlPath: string | undefined | null): string | null => {
+    const getFullImageUrl = (imageUrlPath) => {
         if (!imageUrlPath) return null;
         const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
         if (imageUrlPath.startsWith('http')) {
@@ -60,14 +30,14 @@ const ProductDetailPage: React.FC = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await api.get<{ data: Product }>(`/products/${slug}`);
+                const response = await api.get(`/products/${slug}`);
                 const fetchedProduct = response.data.data || response.data;
                 setProduct(fetchedProduct);
-                const primaryImage = fetchedProduct.images?.find((img: ProductImage) => img.is_primary);
+                const primaryImage = fetchedProduct.images?.find((img) => img.is_primary);
                 const firstImage = fetchedProduct.images?.[0];
                 setSelectedImage(getFullImageUrl(primaryImage?.image_url || firstImage?.image_url));
 
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to fetch product:", err);
                 if (err.response?.status === 404) {
                     setError("Product not found.");
@@ -82,7 +52,7 @@ const ProductDetailPage: React.FC = () => {
         fetchProduct();
     }, [slug]);
 
-    const handleThumbnailClick = (image: ProductImage) => {
+    const handleThumbnailClick = (image) => {
         setSelectedImage(getFullImageUrl(image.image_url));
     };
 

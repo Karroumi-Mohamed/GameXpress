@@ -1,4 +1,4 @@
-export default function getCookie(name: string): string | null {
+export default function getCookie(name) {
     const cookieString = document.cookie;
     const cookies = cookieString.split('; ');
     const cookie = cookies.find(row => row.startsWith(name + '='));
@@ -6,7 +6,7 @@ export default function getCookie(name: string): string | null {
 }
 
 
-export function setCookie(name: string, value: string, days: number = 2) {
+export function setCookie(name, value, days = 2) {
     const date = new Date();
     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
     const expires = "expires=" + date.toUTCString();

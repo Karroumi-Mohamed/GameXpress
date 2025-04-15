@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../lib/axios';
-import { useAuth } from '../../context/AuthContext';
+import api from '../../lib/axios.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import {
     BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -12,49 +12,20 @@ import {
     CalendarDaysIcon, ChartBarIcon, ChartPieIcon, BellAlertIcon, ListBulletIcon
 } from '@heroicons/react/24/outline';
 
-interface Product {
-    id: number;
-    name: string;
-    stock: number;
-    category?: {
-        id: number;
-        name: string;
-    };
-    price: number;
-    status: string;
-    created_at: string;
-}
 
-interface DashboardStats {
-    total_products: number;
-    total_categories: number;
-    total_users: number;
-    low_stock_products: number;
-    out_of_stock_products: number;
-    recent_products: Product[];
-    stock_alerts: Product[];
-}
-
-const formatNumber = (num: number): string => {
+const formatNumber = (num) => {
     return num.toLocaleString('en-US');
 };
 
-interface StatCardProps {
-    title: string;
-    value: number | string;
-    icon: React.ElementType;
-    colorClass?: string;
-    description?: string;
-}
 
-const StatCard: React.FC<StatCardProps> = ({
+const StatCard = ({
     title,
     value,
     icon: Icon,
     colorClass = 'brand',
     description
 }) => {
-    const colorMap: Record<string, { text: string; bgGradient: string }> = {
+    const colorMap = {
         brand: { text: 'text-brand-600', bgGradient: 'from-brand-100 to-brand-200' },
         accent: { text: 'text-accent-600', bgGradient: 'from-accent-100 to-accent-200' },
         blue: { text: 'text-blue-600', bgGradient: 'from-blue-100 to-blue-200' },
@@ -81,20 +52,20 @@ const StatCard: React.FC<StatCardProps> = ({
     );
 };
 
-const AdminDashboard: React.FC = () => {
+const AdminDashboard = () => {
     const { user } = useAuth();
-    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [stats, setStats] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await api.get<DashboardStats>('/admin/dashboard');
+                const response = await api.get('/admin/dashboard');
                 setStats(response.data);
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to fetch dashboard data:", err);
                 setError(err.response?.data?.message || err.message || "Failed to load dashboard data.");
             } finally {
@@ -289,7 +260,7 @@ const AdminDashboard: React.FC = () => {
                                     padding: '8px 12px',
                                 }}
                                 itemStyle={{ color: '#334155', fontSize: '12px' }}
-                                formatter={(value: number, name: string) => [`${formatNumber(value)} Products`, name]}
+                                formatter={(value, name) => [`${formatNumber(value)} Products`, name]}
                             />
                             <Legend
                                 verticalAlign="bottom"
@@ -360,7 +331,7 @@ const AdminDashboard: React.FC = () => {
                                         const product = stats.stock_alerts.find(p => p.id === items[0]?.payload?.id);
                                         return product ? product.name : label;
                                     }}
-                                    formatter={(value: number) => [`${value} units`, 'Current Stock']}
+                                    formatter={(value) => [`${value} units`, 'Current Stock']}
                                 />
                                 <Bar
                                     dataKey="stock"

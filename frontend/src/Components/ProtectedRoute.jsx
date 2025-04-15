@@ -1,12 +1,9 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 
-interface ProtectedRouteProps {
-  allowedRoles?: string[];
-}
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
+const ProtectedRoute = ({ allowedRoles }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -18,8 +15,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
-    const userRoles = user.roles?.map((role: { name: string }) => role.name) || [];
-    const hasRequiredRole = userRoles.some((roleName: string) => allowedRoles.includes(roleName));
+    const userRoles = user.roles?.map((role) => role.name) || [];
+    const hasRequiredRole = userRoles.some((roleName) => allowedRoles.includes(roleName));
 
     if (!hasRequiredRole) {
       return <Navigate to="/" replace />;

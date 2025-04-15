@@ -1,28 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-interface Permission {
-    id: number;
-    name: string;
-}
 
-interface Role {
-    id: number;
-    name: string;
-    permissions: Permission[];
-}
-
-interface PermissionAssignmentFormProps {
-    role: Role | null;
-    onSaveSuccess: () => void;
-    onCancel: () => void;
-}
-
-const PermissionAssignmentForm: React.FC<PermissionAssignmentFormProps> = ({ role, onSaveSuccess, onCancel }) => {
-    const [assignedPermissions, setAssignedPermissions] = useState<number[]>([]);
-    const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+const PermissionAssignmentForm = ({ role, onSaveSuccess, onCancel }) => {
+    const [assignedPermissions, setAssignedPermissions] = useState([]);
+    const [allPermissions, setAllPermissions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isFetchingPermissions, setIsFetchingPermissions] = useState(true);
 
@@ -38,7 +22,7 @@ const PermissionAssignmentForm: React.FC<PermissionAssignmentFormProps> = ({ rol
         const fetchAllPermissions = async () => {
             setIsFetchingPermissions(true);
             try {
-                const response = await api.get<{ data: Permission[] }>('/admin/permissions'); // Placeholder endpoint
+                const response = await api.get('/admin/permissions'); // Placeholder endpoint
                 setAllPermissions(response.data.data || response.data || []);
             } catch (err) {
                 console.error("Failed to fetch all permissions:", err);
@@ -50,7 +34,7 @@ const PermissionAssignmentForm: React.FC<PermissionAssignmentFormProps> = ({ rol
         fetchAllPermissions();
     }, []);
 
-    const handlePermissionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePermissionChange = (event) => {
         const permissionId = parseInt(event.target.value, 10);
         const isChecked = event.target.checked;
 
@@ -63,7 +47,7 @@ const PermissionAssignmentForm: React.FC<PermissionAssignmentFormProps> = ({ rol
         });
     };
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         if (!role) return;
 
@@ -86,7 +70,7 @@ const PermissionAssignmentForm: React.FC<PermissionAssignmentFormProps> = ({ rol
             toast.success(`Permissions for role '${role.name}' updated successfully!`);
             onSaveSuccess();
 
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to update permissions:", err);
             toast.error(err.response?.data?.message || "Failed to update permissions.");
         } finally {

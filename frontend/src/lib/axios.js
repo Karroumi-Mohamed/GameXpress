@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { toast } from 'react-toastify';
 
 axios.defaults.withCredentials = true;
@@ -13,10 +13,10 @@ const api = axios.create({
 
 api.interceptors.response.use(
     (response) => response,
-    (error: AxiosError) => {
+    (error) => {
         if (error.response) {
             const status = error.response.status;
-            const data: any = error.response.data;
+            const data = error.response.data;
             const message = data?.message || error.message || 'An unexpected error occurred';
 
             console.error('API Error:', { status, data, message });

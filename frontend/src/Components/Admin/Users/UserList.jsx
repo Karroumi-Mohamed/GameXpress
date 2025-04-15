@@ -1,37 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { UsersIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
-import Modal from '../../Common/Modal';
-import UserForm from './UserForm';
+import Modal from '../../Common/Modal.jsx';
+import UserForm from './UserForm.jsx';
 
-interface Role {
-    id: number;
-    name: string;
-}
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    created_at: string;
-    roles: Role[];
-}
-
-const UserList: React.FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
+const UserList = () => {
+    const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [editingUser, setEditingUser] = useState(null);
 
     const fetchUsers = async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await api.get<{ data: User[] }>('/admin/users');
+            const response = await api.get('/admin/users');
             setUsers(response.data.data || response.data || []);
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to fetch users:", err);
             setError("Failed to load users. Check console for details.");
         } finally {
@@ -48,7 +36,7 @@ const UserList: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleOpenEditModal = (user: User) => {
+    const handleOpenEditModal = (user) => {
         setEditingUser(user);
         setIsModalOpen(true);
     };
@@ -63,7 +51,7 @@ const UserList: React.FC = () => {
         fetchUsers();
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this user?')) {
             return;
         }
@@ -71,7 +59,7 @@ const UserList: React.FC = () => {
             await api.delete(`/admin/users/${id}`);
             toast.success('User deleted successfully!');
             fetchUsers();
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to delete user:", err);
         }
     };

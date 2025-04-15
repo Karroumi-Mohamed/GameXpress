@@ -1,67 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { CheckIcon, XMarkIcon, PhotoIcon, TrashIcon, StarIcon as StarSolidIcon, ArrowUpTrayIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
-import { useDropzone, FileWithPath } from 'react-dropzone';
+import { useDropzone } from 'react-dropzone';
 import * as Yup from 'yup';
 
-interface FileWithPreview extends FileWithPath {
-  preview: string;
-}
 
-interface ProductImage {
-    id: number;
-    image_url: string;
-    is_primary: boolean;
-}
-
-interface SubCategory {
-    id: number;
-    name: string;
-}
-
-interface Category {
-    id: number;
-    name: string;
-    subcategories?: SubCategory[];
-}
-
-interface Product {
-    id: number;
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    stock: number;
-    category: Category;
-    subcategory?: SubCategory;
-    images: ProductImage[];
-    created_at: string;
-    status: 'available' | 'unavailable';
-    critical_stock_threshold?: number;
-}
-
-interface ProductFormData {
-    name: string;
-    description: string;
-    price: string;
-    stock: string;
-    category_id: string;
-    subcategory_id?: string;
-    status: 'available' | 'unavailable' | '';
-    critical_stock_threshold: string;
-}
-
-interface ProductFormProps {
-    productToEdit?: Product | null;
-    onSaveSuccess: () => void;
-    onCancel: () => void;
-}
-
-const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess, onCancel }) => {
+const ProductForm = ({ productToEdit, onSaveSuccess, onCancel }) => {
     const isEditing = Boolean(productToEdit);
-    const [formData, setFormData] = useState<ProductFormData>({
+    const [formData, setFormData] = useState({
         name: productToEdit?.name || '',
         description: productToEdit?.description || '',
         price: productToEdit?.price?.toString() || '',
@@ -71,20 +19,20 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
         status: productToEdit?.status || '',
         critical_stock_threshold: productToEdit?.critical_stock_threshold?.toString() || '5',
     });
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedCategorySubcategories, setSelectedCategorySubcategories] = useState<SubCategory[]>([]);
+    const [categories, setCategories] = useState([]);
+    const [selectedCategorySubcategories, setSelectedCategorySubcategories] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isUploadingImages, setIsUploadingImages] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string[]>>({});
-    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-    const [imageFiles, setImageFiles] = useState<FileWithPreview[]>([]);
-    const [existingImages, setExistingImages] = useState<ProductImage[]>(productToEdit?.images || []);
-    const [activeTab, setActiveTab] = useState<'general' | 'pricing' | 'images'>('general');
+    const [errors, setErrors] = useState({});
+    const [formErrors, setFormErrors] = useState({});
+    const [imageFiles, setImageFiles] = useState([]);
+    const [existingImages, setExistingImages] = useState(productToEdit?.images || []);
+    const [activeTab, setActiveTab] = useState('general');
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await api.get<{ data: Category[] }>('/admin/categories?includeSubcategories=true');
+                const response = await api.get('/admin/categories?includeSubcategories=true');
                 setCategories(response.data.data || []);
             } catch (err) {
                 console.error("Failed to fetch categories for form:", err);
@@ -124,13 +72,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
         setActiveTab('general');
     }, [productToEdit]);
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
-        const filesWithPreview: FileWithPreview[] = acceptedFiles.map(file => Object.assign(file, {
+    const onDrop = useCallback((acceptedFiles) => {
+        const filesWithPreview = acceptedFiles.map(file => Object.assign(file, {
             preview: URL.createObjectURL(file)
         }));
         setImageFiles(prev => [...prev, ...filesWithPreview]);
@@ -146,34 +94,34 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
         return () => imageFiles.forEach(file => URL.revokeObjectURL(file.preview));
     }, [imageFiles]);
 
-    const removeNewImage = (index: number) => {
+    const removeNewImage = (index) => {
         const fileToRemove = imageFiles[index];
         URL.revokeObjectURL(fileToRemove.preview);
         setImageFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const removeExistingImage = async (imageId: number) => {
+    const removeExistingImage = async (imageId) => {
         if (!productToEdit || !window.confirm('Are you sure you want to delete this image?')) return;
         console.log(`Calling API DELETE /admin/products/${productToEdit.id}/images/${imageId}`);
         try {
             await api.delete(`/admin/products/${productToEdit.id}/images/${imageId}`);
             setExistingImages(prev => prev.filter(img => img.id !== imageId));
             toast.success('Image deleted successfully.');
-        } catch (err: any) {
+        } catch (err) {
             const errMsg = err.response?.data?.message || err.message || 'Failed to delete image.';
             toast.error(errMsg);
             console.error("Image deletion error:", err);
         }
     };
 
-    const setPrimaryImage = async (imageId: number) => {
+    const setPrimaryImage = async (imageId) => {
          if (!productToEdit) return;
          console.log(`Calling API PUT /admin/products/${productToEdit.id}/images/${imageId}/set-primary`);
          try {
             await api.put(`/admin/products/${productToEdit.id}/images/${imageId}/set-primary`);
             setExistingImages(prev => prev.map(img => ({ ...img, is_primary: img.id === imageId })));
             toast.success('Primary image updated successfully.');
-         } catch (err: any) {
+         } catch (err) {
             const errMsg = err.response?.data?.message || err.message || 'Failed to set primary image.';
             toast.error(errMsg);
             console.error("Set primary image error:", err);
@@ -194,7 +142,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
             setExistingImages(response.data.images || []);
             setImageFiles([]);
             toast.success(response.data.message || 'Images uploaded successfully!');
-        } catch (imgErr: any) {
+        } catch (imgErr) {
              console.error("Failed to upload images:", imgErr);
              const imgErrMsg = imgErr.response?.data?.message || imgErr.message || "Failed to upload new images.";
              toast.error(`Image upload failed: ${imgErrMsg}`);
@@ -225,7 +173,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
         status: Yup.string().oneOf(['available', 'unavailable'], 'Invalid status').required('Status is required'),
     });
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
         setErrors({});
@@ -241,10 +189,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
                 },
                 { abortEarly: false }
             );
-        } catch (validationError: any) {
-            const yupErrors: Record<string, string> = {};
+        } catch (validationError) {
+            const yupErrors = {};
             if (validationError.inner) {
-                validationError.inner.forEach((error: Yup.ValidationError) => {
+                validationError.inner.forEach((error) => {
                     if (error.path) yupErrors[error.path] = error.message;
                 });
             }
@@ -268,7 +216,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
             critical_stock_threshold: parseInt(formData.critical_stock_threshold, 10) || 0,
             ...(formData.subcategory_id && { sub_category_id: parseInt(formData.subcategory_id, 10) })
         };
-        delete (apiData as any).subcategory_id;
+        delete apiData.subcategory_id; // Remove the original key
 
         try {
             if (isEditing && productToEdit) {
@@ -279,7 +227,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
                 toast.success('Product created successfully! Please edit the product to add images.');
             }
             onSaveSuccess();
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to save product:", err);
             if (err.response?.status === 422) {
                 setErrors(err.response.data.errors);
@@ -299,15 +247,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ productToEdit, onSaveSuccess,
         }
     };
 
-    const hasError = (fieldName: keyof ProductFormData) => Boolean(errors[fieldName] || formErrors[fieldName]);
+    const hasError = (fieldName) => Boolean(errors[fieldName] || formErrors[fieldName]);
 
-    const inputClass = (fieldName: keyof ProductFormData) =>
+    const inputClass = (fieldName) =>
         `block w-full px-4 py-2 text-slate-900 border ${hasError(fieldName) ? 'border-red-500' : 'border-slate-300'} rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 ${hasError(fieldName) ? 'focus:ring-red-500 focus:border-red-500' : 'focus:ring-indigo-500 focus:border-indigo-500'} sm:text-sm transition duration-150 ease-in-out`;
 
-    const selectClass = (fieldName: keyof ProductFormData) =>
+    const selectClass = (fieldName) =>
         `block w-full pl-3 pr-10 py-2 text-base border ${hasError(fieldName) ? 'border-red-500' : 'border-slate-300'} focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg shadow-sm transition duration-150 ease-in-out`;
 
-    const displayError = (fieldName: keyof ProductFormData) => {
+    const displayError = (fieldName) => {
         const errorMsg = formErrors[fieldName] || errors[fieldName]?.[0];
         return errorMsg ? <p className="mt-1 text-xs text-red-600">{errorMsg}</p> : null;
     };

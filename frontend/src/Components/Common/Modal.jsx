@@ -1,18 +1,11 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
-interface ModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    title: string;
-    children: ReactNode;
-    size?: 'sm' | 'md' | 'lg' | 'xl';
-}
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     if (!isOpen) return null;
 
-    const sizeClasses: Record<string, string> = {
+    const sizeClasses = {
         sm: 'max-w-sm',
         md: 'max-w-md',
         lg: 'max-w-lg',

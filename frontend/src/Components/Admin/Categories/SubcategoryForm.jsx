@@ -1,37 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-interface SubCategory {
-    id: number;
-    name: string;
-    slug: string;
-    category_id: number;
-}
 
-interface SubcategoryFormData {
-    name: string;
-    category_id: number;
-}
-
-interface SubcategoryFormProps {
-    categoryId: number;
-    subcategoryToEdit?: SubCategory | null;
-    onSaveSuccess: () => void;
-    onCancel: () => void;
-}
-
-const SubcategoryForm: React.FC<SubcategoryFormProps> = ({ categoryId, subcategoryToEdit, onSaveSuccess, onCancel }) => {
+const SubcategoryForm = ({ categoryId, subcategoryToEdit, onSaveSuccess, onCancel }) => {
     const isEditing = Boolean(subcategoryToEdit);
     console.log(categoryId);
     
-    const [formData, setFormData] = useState<SubcategoryFormData>({
+    const [formData, setFormData] = useState({
         name: subcategoryToEdit?.name || '',
         category_id: categoryId,
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string[]>>({});
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         setFormData({
@@ -41,12 +23,12 @@ const SubcategoryForm: React.FC<SubcategoryFormProps> = ({ categoryId, subcatego
         setErrors({});
     }, [subcategoryToEdit, categoryId]);
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
         setErrors({});
@@ -57,12 +39,12 @@ const SubcategoryForm: React.FC<SubcategoryFormProps> = ({ categoryId, subcatego
                 toast.success('Subcategory updated successfully!');
             } else {
                 // When creating a new subcategory, we need to specify the category_id
-                
-                await api.post('/admin/categories', formData);
+                // Correct endpoint for creating a subcategory
+                await api.post(`/admin/categories/${categoryId}/subcategories`, formData);
                 toast.success('Subcategory created successfully!');
             }
             onSaveSuccess();
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to save subcategory:", err);
             if (err.response?.status === 422) {
                 setErrors(err.response.data.errors);

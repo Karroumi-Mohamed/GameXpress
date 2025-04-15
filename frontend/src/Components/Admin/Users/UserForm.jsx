@@ -1,54 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import * as Yup from 'yup';
 
-interface Role {
-    id: number;
-    name: string;
-}
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    created_at: string;
-    roles: Role[];
-}
-
-interface UserFormData {
-    name: string;
-    email: string;
-    password?: string;
-    password_confirmation?: string;
-    roles: number[];
-}
-
-interface UserFormProps {
-    userToEdit?: User | null;
-    onSaveSuccess: () => void;
-    onCancel: () => void;
-}
-
-const UserForm: React.FC<UserFormProps> = ({ userToEdit, onSaveSuccess, onCancel }) => {
+const UserForm = ({ userToEdit, onSaveSuccess, onCancel }) => {
     const isEditing = Boolean(userToEdit);
-    const [formData, setFormData] = useState<UserFormData>({
+    const [formData, setFormData] = useState({
         name: userToEdit?.name || '',
         email: userToEdit?.email || '',
         password: '',
         password_confirmation: '',
         roles: userToEdit?.roles?.map(role => role.id) || [],
     });
-    const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
+    const [availableRoles, setAvailableRoles] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [apiErrors, setApiErrors] = useState<Record<string, string[]>>({});
-    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const [apiErrors, setApiErrors] = useState({});
+    const [formErrors, setFormErrors] = useState({});
 
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await api.get<{ data: Role[] }>('/admin/roles');
+                const response = await api.get('/admin/roles');
                 setAvailableRoles(response.data.data || response.data || []);
             } catch (err) {
                 console.error("Failed to fetch roles:", err);
@@ -87,12 +61,12 @@ const UserForm: React.FC<UserFormProps> = ({ userToEdit, onSaveSuccess, onCancel
     });
 
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleRoleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleRoleChange = (event) => {
         const roleId = parseInt(event.target.value, 10);
         const isChecked = event.target.checked;
 
@@ -107,7 +81,7 @@ const UserForm: React.FC<UserFormProps> = ({ userToEdit, onSaveSuccess, onCancel
     };
 
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setIsLoading(true);
         setApiErrors({});
@@ -115,10 +89,10 @@ const UserForm: React.FC<UserFormProps> = ({ userToEdit, onSaveSuccess, onCancel
 
         try {
             await userSchema.validate(formData, { abortEarly: false });
-        } catch (validationError: any) {
-            const yupErrors: Record<string, string> = {};
+        } catch (validationError) {
+            const yupErrors = {};
             if (validationError.inner) {
-                validationError.inner.forEach((error: Yup.ValidationError) => {
+                validationError.inner.forEach((error) => {
                     if (error.path) yupErrors[error.path] = error.message;
                 });
             }
@@ -128,7 +102,7 @@ const UserForm: React.FC<UserFormProps> = ({ userToEdit, onSaveSuccess, onCancel
             return;
         }
 
-        const apiData: any = { ...formData };
+        const apiData = { ...formData };
         if (isEditing && !apiData.password) {
             delete apiData.password;
             delete apiData.password_confirmation;
@@ -147,7 +121,7 @@ const UserForm: React.FC<UserFormProps> = ({ userToEdit, onSaveSuccess, onCancel
                 toast.success('User created successfully!');
             }
             onSaveSuccess();
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to save user:", err);
             if (err.response?.status === 422) {
                 setApiErrors(err.response.data.errors);
@@ -160,12 +134,12 @@ const UserForm: React.FC<UserFormProps> = ({ userToEdit, onSaveSuccess, onCancel
         }
     };
 
-    const hasError = (fieldName: keyof UserFormData | string) => Boolean(apiErrors[fieldName] || formErrors[fieldName]);
+    const hasError = (fieldName) => Boolean(apiErrors[fieldName] || formErrors[fieldName]);
 
-    const inputClass = (fieldName: keyof UserFormData | string) =>
+    const inputClass = (fieldName) =>
         `block w-full px-4 py-2 text-slate-900 border ${hasError(fieldName) ? 'border-red-500' : 'border-slate-300'} rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 ${hasError(fieldName) ? 'focus:ring-red-500 focus:border-red-500' : 'focus:ring-indigo-500 focus:border-indigo-500'} sm:text-sm transition duration-150 ease-in-out`;
 
-    const displayError = (fieldName: keyof UserFormData | string) => {
+    const displayError = (fieldName) => {
         const errorMsg = formErrors[fieldName] || apiErrors[fieldName]?.[0];
         return errorMsg ? <p className="mt-1 text-xs text-red-600">{errorMsg}</p> : null;
     };

@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../lib/axios';
+import api from '../lib/axios.js';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 import { toast } from 'react-toastify';
 
 export default function Login() {
     const [email, setemail] = useState('');
     const [password, setpassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const auth = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError(null);
 
@@ -36,7 +36,7 @@ export default function Login() {
             toast.success(`Welcome back, ${userData?.name || 'User'}!`);
             navigate('/admin');
 
-        } catch (err: any) {
+        } catch (err) {
             console.error('Authentication failed:', err);
             let errorMessage = err.message || 'An unknown error occurred';
             if (err.response) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../lib/axios';
+import api from '../lib/axios.js';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -9,12 +9,12 @@ export default function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
-    const [errors, setErrors] = useState<Record<string, string[]>>({});
+    const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setErrors({});
         setIsLoading(true);
@@ -35,7 +35,7 @@ export default function Register() {
             toast.success('Registration successful! Please log in.');
             navigate('/login');
 
-        } catch (err: any) {
+        } catch (err) {
             console.error('Registration failed:', err);
             if (err.response?.status === 422) {
                 setErrors(err.response.data.errors);

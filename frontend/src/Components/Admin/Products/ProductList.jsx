@@ -1,56 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../lib/axios';
+import api from '../../../lib/axios.js';
 import { toast } from 'react-toastify';
 import { CubeIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
-import Modal from '../../Common/Modal';
-import ProductForm from './ProductForm';
+import Modal from '../../Common/Modal.jsx';
+import ProductForm from './ProductForm.jsx';
 
-interface ProductImage {
-    id: number;
-    image_url: string;
-    is_primary: boolean;
-}
 
-interface SubCategory {
-    id: number;
-    name: string;
-}
-
-interface Category {
-    id: number;
-    name: string;
-    subcategories?: SubCategory[];
-}
-
-interface Product {
-    id: number;
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    stock: number;
-    category: Category;
-    subcategory?: SubCategory;
-    images: ProductImage[];
-    created_at: string;
-    status: 'available' | 'unavailable';
-    critical_stock_threshold?: number;
-}
-
-const ProductList: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
+const ProductList = () => {
+    const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [editingProduct, setEditingProduct] = useState(null);
 
     const fetchProducts = async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await api.get<{ data: Product[] }>('/admin/products');
+            const response = await api.get('/admin/products');
             setProducts(response.data.data || response.data || []);
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to fetch products:", err);
             setError("Failed to load products. Check console for details.");
         } finally {
@@ -67,7 +36,7 @@ const ProductList: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleOpenEditModal = (product: Product) => {
+    const handleOpenEditModal = (product) => {
         setEditingProduct(product);
         setIsModalOpen(true);
     };
@@ -82,7 +51,7 @@ const ProductList: React.FC = () => {
         fetchProducts();
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this product?')) {
             return;
         }
@@ -90,12 +59,12 @@ const ProductList: React.FC = () => {
             await api.delete(`/admin/products/${id}`);
             toast.success('Product deleted successfully!');
             fetchProducts();
-        } catch (err: any) {
+        } catch (err) {
             console.error("Failed to delete product:", err);
         }
     };
 
-    const getPrimaryImageUrl = (images: ProductImage[]): string | null => {
+    const getPrimaryImageUrl = (images) => {
         const primary = images?.find(img => img.is_primary);
         const firstImage = images?.[0];
         const imageUrlPath = primary?.image_url || firstImage?.image_url;
