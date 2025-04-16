@@ -19,7 +19,7 @@ const ProductList = () => {
         try {
             const response = await api.get('/admin/products');
             setProducts(response.data.data || response.data || []);
-        } catch (err) {
+        } catch (err) {                     
             console.error("Failed to fetch products:", err);
             setError("Failed to load products. Check console for details.");
         } finally {

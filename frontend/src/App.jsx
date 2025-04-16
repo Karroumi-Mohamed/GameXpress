@@ -11,15 +11,15 @@ import UserList from './Components/Admin/Users/UserList.jsx';
 import RolesList from './Components/Admin/RolesPermissions/RolesList.jsx';
 import ProductListPage from './Components/Frontoffice/Products/ProductListPage.jsx'; // Import Frontoffice List
 import ProductDetailPage from './Components/Frontoffice/Products/ProductDetailPage.jsx'; // Import Frontoffice Detail
+import FrontOfficeLayout from './Components/Frontoffice/FrontOfficeLayout.jsx';
 
 function App() {
   return (
     <Routes>
       {/* Public Frontoffice Routes */}
-      <Route path="/products" element={<ProductListPage />} />
+      <Route path="/products" element={<FrontOfficeLayout />} />
       <Route path="/products/:slug" element={<ProductDetailPage />} />
-      {/* Add other frontoffice routes like Home, Cart, etc. here */}
-      <Route path="/" element={<ProductListPage />} /> {/* Example: Default to product list */}
+      <Route path="/" element={<FrontOfficeLayout />} /> {/* Example: Default to product list */}
 
 
       {/* Auth Routes */}

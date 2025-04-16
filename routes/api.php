@@ -94,10 +94,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/orders/{orderId}/cancel', [OrderController::class, 'cancel']);
     });
 
-    Route::prefix('cart')->group(function () {
+    Route::prefix('/cart')->group(function () {
         Route::get('/', [AdminCartController::class, 'cart']);
-        Route::post('items', [AdminCartController::class, 'addItem']);
-        Route::put('items/{cartItem}', [AdminCartController::class, 'updateItem']);
-        Route::delete('items/{cartItem}', [AdminCartController::class, 'removeItem']);
+        Route::post('/items', [AdminCartController::class, 'addItem']);
+        Route::put('/items/{cartItem}', [AdminCartController::class, 'updateItem']);
+        Route::delete('/items/{cartItem}', [AdminCartController::class, 'removeItem']);
     });
 });

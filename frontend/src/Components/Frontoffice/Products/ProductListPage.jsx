@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import api from '../../../lib/axios.js';
 import { Link } from 'react-router-dom';
 import { CubeIcon } from '@heroicons/react/24/outline';
+import CartContext from '../../../context/CartContext.jsx';
 
 
 const ProductListPage = () => {
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { cart, setCart, addToCart } = useContext(CartContext);
 
     const getPrimaryImageUrl = (images) => {
         const primary = images?.find(img => img.is_primary);
@@ -25,14 +27,14 @@ const ProductListPage = () => {
 
     useEffect(() => {
         const fetchProducts = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const response = await api.get('/products');
-            setProducts(response.data.data || response.data || []);
-        } catch (err) {
-            console.error("Failed to fetch products:", err);
-            setError("Failed to load products. Please try again later.");
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await api.get('/products');
+                setProducts(response.data.data || response.data || []);
+            } catch (err) {
+                console.error("Failed to fetch products:", err);
+                setError("Failed to load products. Please try again later.");
             } finally {
                 setIsLoading(false);
             }
@@ -48,6 +50,12 @@ const ProductListPage = () => {
     if (error) {
         return <div className="container mx-auto px-4 py-16 text-center text-red-600">Error: {error}</div>;
     }
+
+    const handleAddToCart = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        addToCart(product);
+    };
 
     return (
         <div className="bg-gray-50 min-h-screen">
@@ -77,7 +85,13 @@ const ProductListPage = () => {
                                     </div>
                                     <div className="p-4">
                                         <h2 className="text-lg font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition-colors duration-200">{product.name}</h2>
-                                        <p className="text-xl font-bold text-indigo-600 mt-3">${product.price?.toFixed(2)}</p>
+                                        <p className="text-xl font-bold text-indigo-600 mt-3">${product.price}</p>
+                                    </div>
+                                    <div>
+                                        <button onClick={(e) => handleAddToCart(e, product)}
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded w-full transition duration-200">
+                                            Add to Cart
+                                        </button>
                                     </div>
                                 </Link>
                             );
@@ -92,7 +106,7 @@ const ProductListPage = () => {
                 )}
             </div>
 
-             <footer className="bg-gray-800 text-white mt-16 py-8">
+            <footer className="bg-gray-800 text-white mt-16 py-8">
                 <div className="container mx-auto px-4 text-center text-sm">
                     &copy; {new Date().getFullYear()} GameXpress. All rights reserved.
                 </div>

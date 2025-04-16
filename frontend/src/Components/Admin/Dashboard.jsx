@@ -383,7 +383,7 @@ const AdminDashboard = () => {
                                         <p className="text-xs text-slate-500 flex items-center flex-wrap gap-x-1.5">
                                             <span>{product.category?.name || 'Uncategorized'}</span>
                                             <span className="text-slate-300">•</span>
-                                            <span>${product.price?.toFixed(2) || '0.00'}</span>
+                                            <span>${product.price || '0.00'}</span>
                                             <span className="text-slate-300">•</span>
                                             <span className="inline-flex items-center">
                                                 <ClockIcon className="h-3 w-3 mr-1 text-slate-400" />
@@ -393,8 +393,8 @@ const AdminDashboard = () => {
                                     </div>
                                     <div className="flex-shrink-0">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === 'available' ? 'bg-success-100 text-success-700' :
-                                                product.status === 'out_of_stock' ? 'bg-danger-100 text-danger-700' :
-                                                    'bg-warning-100 text-warning-700'
+                                            product.status === 'out_of_stock' ? 'bg-danger-100 text-danger-700' :
+                                                'bg-warning-100 text-warning-700'
                                             }`}>
                                             {product.status.replace('_', ' ')}
                                         </span>

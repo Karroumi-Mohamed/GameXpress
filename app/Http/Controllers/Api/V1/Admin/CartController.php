@@ -23,7 +23,6 @@ class CartController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'session_id' => 'required_without:user_id'
         ]);
 
 
@@ -35,10 +34,23 @@ class CartController extends Controller
             ], 400);
         }
 
-        $cart = $this->getCart($request->session_id);
+
+        if (Auth::check()) {
+
+            $cart = Cart::firstOrCreate([
+                'user_id' => Auth::id()
+            ]);
+
+        } else {
+            $cart = Cart::firstOrCreate([
+                'session_id' => $request->session_id
+            ]);
+        }
 
 
         $cartItem = $this->addToCart($cart, $product, $validated['quantity']);
+
+        return $cartItem;
 
         $totals = CartHelper::calculateTotal($cart);
         return response()->json([
@@ -91,7 +103,6 @@ class CartController extends Controller
     {
         $existingItem = $cart->items()->where('product_id', $product->id)->first();
         $newQuantity = $existingItem ? $existingItem->quantity + $quantity : $quantity;
-
         $cartItem = CartItem::updateOrCreate(
             [
                 'cart_id' => $cart->id,
@@ -102,7 +113,6 @@ class CartController extends Controller
 
         $cart = $cart->fresh();
         $totals = CartHelper::calculateTotal($cart);
-        //  return $cartItem->load('product');
 
 
         DeleteProductJob::dispatch($cartItem->id)->delay(Carbon::now()->addHours(48));
