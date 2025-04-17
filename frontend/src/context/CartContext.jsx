@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import api from "../lib/axios";
 
 const CartContext = createContext(undefined);
@@ -38,6 +38,10 @@ const CartProvider = ({ children }) => {
         // });
     }
 
+    useEffect(() => {
+        fetchCartItems();
+    }, []);
+    
     return (
         <CartContext.Provider value={{ cart, setCart, addToCart }}>
             {children}

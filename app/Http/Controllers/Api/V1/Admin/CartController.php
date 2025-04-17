@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redis;
 use app\Helpers\CartHelper;
 use app\Helpers\ProductHelper;
+use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
@@ -35,27 +36,16 @@ class CartController extends Controller
         }
 
 
-        if (Auth::check()) {
-
-            $cart = Cart::firstOrCreate([
-                'user_id' => Auth::id()
-            ]);
-
-        } else {
-            $cart = Cart::firstOrCreate([
-                'session_id' => $request->session_id
-            ]);
-        }
-
+        $cart = $this->getCart(Session::getId());
 
         $cartItem = $this->addToCart($cart, $product, $validated['quantity']);
 
-        return $cartItem;
-
         $totals = CartHelper::calculateTotal($cart);
+        
         return response()->json([
             'message' => 'Item added to cart',
             'cart_item' => $cartItem,
+            'cart' => $cart,
             'totals' => $totals
         ], 201);
     }
@@ -115,7 +105,6 @@ class CartController extends Controller
         $totals = CartHelper::calculateTotal($cart);
 
 
-        DeleteProductJob::dispatch($cartItem->id)->delay(Carbon::now()->addHours(48));
         return [
             'cart_item' => $cartItem->load('product'),
             'totals' => $totals
