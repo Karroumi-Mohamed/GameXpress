@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
  *    version="1.0.0",
  *    description="API for managing products"
  * )
- * 
+ *
  * @OA\Tag(
  *     name="Products",
  *     description="API endpoints for managing products"
@@ -50,7 +50,7 @@ class ProductController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="current_page", type="integer"),
-     *             @OA\Property(property="data", type="array", 
+     *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
      *                     @OA\Property(property="id", type="integer"),
      *                     @OA\Property(property="name", type="string"),
@@ -208,8 +208,9 @@ class ProductController extends Controller
      *     )
      * )
      */
-    public function show(Product $product)
+    public function show($slug)
     {
+        $product = Product::where('slug', $slug)->with(['category', 'images'])->firstOrFail();
         return response()->json($product->load(['category', 'images']));
     }
 

@@ -30,11 +30,10 @@ Route::prefix('v1')->group(function () {
         $user = $request->user();
         $user->load(['roles', 'permissions']);
         return response()->json($user);
-
     })->middleware('auth:sanctum');
-        Route::get('products', [AdminProductController::class, 'index']);
-        Route::get('products/{product}', [AdminProductController::class, 'show']);
-    
+
+    Route::get('products', [AdminProductController::class, 'index']);
+    Route::get('products/{product}', [AdminProductController::class, 'show']);
 
     Route::prefix('admin')->group(function () {
 
@@ -54,8 +53,12 @@ Route::prefix('v1')->group(function () {
                 Route::put('products/{product}/images/{image}/set-primary', [AdminProductImageController::class, 'setPrimary']);
                 Route::get('products/{product}/images', [AdminProductImageController::class, 'index']);
                 Route::get('products/{product}/images/{image}', [AdminProductImageController::class, 'show']);
+                Route::get('products', [AdminProductController::class, 'index']);
+                Route::get('products/{product}', [AdminProductController::class, 'show']);
+                Route::get('products', [AdminProductController::class, 'index']);
+                Route::get('products/{product}', [AdminProductController::class, 'show']);
             });
-            
+
 
             Route::middleware('role:user_manager|super_admin')->group(function () {
                 Route::apiResource('users', AdminUserController::class);
