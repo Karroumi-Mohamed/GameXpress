@@ -59,12 +59,6 @@ const ProductListPage = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen">
-            <nav className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to="/" className="text-2xl font-bold text-indigo-600">GameXpress</Link>
-                </div>
-            </nav>
-
             <div className="container mx-auto px-4 py-12">
                 <h1 className="text-3xl font-bold text-gray-800 mb-8">Our Products</h1>
 

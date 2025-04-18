@@ -57,16 +57,18 @@ class CartController extends Controller
                 'message' => 'Insufficient stock'
             ], 400);
         }
-        $cart = $this->getCart($request->session_id);
 
-        $cartItem = $this->addToCart($cart, $cartItem->product, $validated['quantity']);
+        // Directly update the quantity of the specific cart item
+        $cartItem->quantity = $validated['quantity'];
+        $cartItem->save();
+
+        // Recalculate totals for the cart
+        $cart = $cartItem->cart; // Get the cart associated with the item
         $totals = CartHelper::calculateTotal($cart);
-
-        $this->updateCartItem($cartItem, $validated['quantity']);
 
         return response()->json([
             'message' => 'Cart item updated',
-            'cart_item' => $cartItem,
+            'cart_item' => $cartItem->load('product'), // Return the updated item with product
             'totals' => $totals
         ]);
     }
