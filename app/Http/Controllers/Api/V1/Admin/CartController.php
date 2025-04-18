@@ -2,18 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
-use App\Jobs\DeleteProductJob;
-use App\Http\Controllers\Api\V1\OrderController;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redis;
-use app\Helpers\CartHelper;
-use app\Helpers\ProductHelper;
+use App\Helpers\CartHelper;
+use App\Helpers\ProductHelper;
 use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
@@ -41,7 +37,7 @@ class CartController extends Controller
         $cartItem = $this->addToCart($cart, $product, $validated['quantity']);
 
         $totals = CartHelper::calculateTotal($cart);
-        
+
         return response()->json([
             'message' => 'Item added to cart',
             'cart_item' => $cartItem,
@@ -127,9 +123,12 @@ class CartController extends Controller
 
     public function cart(Request $request)
     {
-        $cart = $this->getCart($request->session_id);
+        $cart = $this->getCart(Session::getId());
 
         $totals = CartHelper::calculateTotal($cart);
+        $cart->load('items.product');
+
+
         return response()->json([
             'cart' => $cart,
             'items' => $cart->items,
@@ -140,36 +139,12 @@ class CartController extends Controller
     private function getCart($sessionId): Cart
     {
         if (Auth::check()) {
-            $userCart = Cart::firstOrCreate([
+            return Cart::with('items.product')->firstOrCreate([
                 'user_id' => Auth::id()
             ]);
-
-            $cartSession = Cart::where('session_id', $sessionId)->first();
-            if ($cartSession) {
-                $items = $cartSession->items;
-                foreach ($items as $item) {
-                    $itemExists = $userCart->items()->where('product_id', $item->product_id)->first();
-
-                    if ($itemExists) {
-                        $newQuantity = $itemExists->quantity + $item->quantity;
-                        if (ProductHelper::hasEnoughStock($item->product, $newQuantity)) {
-                            $itemExists->quantity = $newQuantity;
-                        } else {
-                            $itemExists->quantity = $item->product->stock;
-                        }
-                        $itemExists->save();
-                        $item->delete();
-                    } else {
-                        $item->cart_id = $userCart->id;
-                        $item->save();
-                    }
-                }
-            }
-
-            return $userCart;
         }
 
-        return Cart::firstOrCreate([
+        return Cart::with('items.product')->firstOrCreate([
             'session_id' => $sessionId
         ]);
     }

@@ -22,7 +22,7 @@ const PermissionAssignmentForm = ({ role, onSaveSuccess, onCancel }) => {
         const fetchAllPermissions = async () => {
             setIsFetchingPermissions(true);
             try {
-                const response = await api.get('/admin/permissions'); // Placeholder endpoint
+                const response = await api.get('/admin/permissions');
                 setAllPermissions(response.data.data || response.data || []);
             } catch (err) {
                 console.error("Failed to fetch all permissions:", err);
@@ -53,16 +53,20 @@ const PermissionAssignmentForm = ({ role, onSaveSuccess, onCancel }) => {
 
         setIsLoading(true);
 
-        const initialPermissionIds = role.permissions?.map(p => p.id) || [];
-        const permissionsToAdd = assignedPermissions.filter(id => !initialPermissionIds.includes(id));
-        const permissionsToRemove = initialPermissionIds.filter(id => !assignedPermissions.includes(id));
+        const initialPermissionNames = role.permissions?.map(p => p.name) || [];
+        const assignedPermissionObjects = allPermissions.filter(p => assignedPermissions.includes(p.id));
+        const assignedPermissionNames = assignedPermissionObjects.map(p => p.name);
+
+        const permissionsToAddNames = assignedPermissionNames.filter(name => !initialPermissionNames.includes(name));
+        const permissionsToRemoveNames = initialPermissionNames.filter(name => !assignedPermissionNames.includes(name));
+
 
         try {
-            const addPromises = permissionsToAdd.map(permissionId =>
-                api.post(`/admin/roles/${role.id}/add-permission`, { permission_id: permissionId })
+            const addPromises = permissionsToAddNames.map(permissionName =>
+                api.post(`/admin/roles/${role.id}/add-permission`, { permission_name: permissionName })
             );
-            const removePromises = permissionsToRemove.map(permissionId =>
-                 api.post(`/admin/roles/${role.id}/remove-permission`, { permission_id: permissionId })
+            const removePromises = permissionsToRemoveNames.map(permissionName =>
+                 api.post(`/admin/roles/${role.id}/remove-permission`, { permission_name: permissionName })
             );
 
             await Promise.all([...addPromises, ...removePromises]);

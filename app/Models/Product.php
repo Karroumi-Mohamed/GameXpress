@@ -30,6 +30,12 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
+
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_primary', true);
+    }
+
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);

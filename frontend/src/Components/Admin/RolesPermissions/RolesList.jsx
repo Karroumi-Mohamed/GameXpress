@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../../lib/axios.js';
-import { ShieldCheckIcon, LockClosedIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon, LockClosedIcon, PencilIcon, TrashIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import Modal from '../../Common/Modal.jsx';
 import PermissionAssignmentForm from './PermissionAssignmentForm.jsx';
+import RolesManager from './RolesManager.jsx';
+import PermissionsManager from './PermissionsManager.jsx';
 
 
 const RolesList = () => {
     const [roles, setRoles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedRole, setSelectedRole] = useState(null);
+    const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+    const [selectedRoleForPermissions, setSelectedRoleForPermissions] = useState(null);
+    const rolesManagerRef = useRef();
 
     const fetchRoles = async () => {
         setIsLoading(true);
@@ -30,18 +33,19 @@ const RolesList = () => {
         fetchRoles();
     }, []);
 
-    const handleOpenEditModal = (role) => {
-        setSelectedRole(role);
-        setIsModalOpen(true);
+
+    const handleOpenPermissionModal = (role) => {
+        setSelectedRoleForPermissions(role);
+        setIsPermissionModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setSelectedRole(null);
+    const handleClosePermissionModal = () => {
+        setIsPermissionModalOpen(false);
+        setSelectedRoleForPermissions(null);
     };
 
-    const handleSaveSuccess = () => {
-        handleCloseModal();
+    const handlePermissionSaveSuccess = () => {
+        handleClosePermissionModal();
         fetchRoles();
     };
 
@@ -61,9 +65,10 @@ const RolesList = () => {
                     <ShieldCheckIcon className="h-8 w-8 mr-3 text-accent-500" />
                     Manage Roles & Permissions
                 </h1>
+                 <RolesManager ref={rolesManagerRef} roles={roles} fetchRoles={fetchRoles} />
             </div>
 
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-x-auto">
+            <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-x-auto mb-10">
                 <table className="min-w-full divide-y divide-slate-100">
                     <thead className="bg-slate-50/75">
                         <tr>
@@ -91,14 +96,30 @@ const RolesList = () => {
                                         )}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1">
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <button
-                                        onClick={() => handleOpenEditModal(role)}
+                                        onClick={() => handleOpenPermissionModal(role)}
                                         title="Edit Permissions"
-                                        className="text-indigo-600 hover:text-indigo-800 inline-flex items-center p-1.5 hover:bg-indigo-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                                        className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-100 rounded disabled:opacity-50 disabled:cursor-not-allowed opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         <PencilSquareIcon className="h-5 w-5" />
                                         <span className="sr-only">Edit Permissions</span>
+                                    </button>
+                                     <button
+                                        onClick={() => rolesManagerRef.current?.handleEditRole(role)}
+                                        title="Edit Role Name"
+                                        className="text-teal-600 hover:text-teal-900 p-1 hover:bg-teal-100 rounded disabled:opacity-50 disabled:cursor-not-allowed opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <PencilIcon className="h-5 w-5" />
+                                        <span className="sr-only">Edit Role Name</span>
+                                    </button>
+                                     <button
+                                        onClick={() => rolesManagerRef.current?.handleDeleteRole(role.id, role.name)}
+                                        title="Delete Role"
+                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-100 rounded disabled:opacity-50 disabled:cursor-not-allowed opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <TrashIcon className="h-5 w-5" />
+                                        <span className="sr-only">Delete Role</span>
                                     </button>
                                 </td>
                             </tr>
@@ -115,18 +136,23 @@ const RolesList = () => {
                 </table>
             </div>
 
+
              <Modal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                title={`Edit Permissions for ${selectedRole?.name.replace('_', ' ')}`}
+                isOpen={isPermissionModalOpen}
+                onClose={handleClosePermissionModal}
+                title={`Edit Permissions for ${selectedRoleForPermissions?.name?.replace('_', ' ') ?? 'Role'}`}
                 size="xl"
              >
-                 <PermissionAssignmentForm
-                    role={selectedRole}
-                    onSaveSuccess={handleSaveSuccess}
-                    onCancel={handleCloseModal}
-                />
+                 {isPermissionModalOpen && selectedRoleForPermissions && (
+                    <PermissionAssignmentForm
+                        role={selectedRoleForPermissions}
+                        onSaveSuccess={handlePermissionSaveSuccess}
+                        onCancel={handleClosePermissionModal}
+                    />
+                 )}
              </Modal>
+
+             <PermissionsManager />
         </div>
     );
 };

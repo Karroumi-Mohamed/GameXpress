@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductControlle
 use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\Admin\ProductImageController as AdminProductImageController;
 use App\Http\Controllers\Api\V1\Admin\RolePermissionController as AdminRolePermissionController;
+use App\Http\Controllers\Api\V1\ProductController;
 
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -30,17 +31,20 @@ Route::prefix('v1')->group(function () {
         $user = $request->user();
         $user->load(['roles', 'permissions']);
         return response()->json($user);
-
     })->middleware('auth:sanctum');
-        Route::get('products', [AdminProductController::class, 'index']);
-        Route::get('products/{product}', [AdminProductController::class, 'show']);
-    
+
+    Route::get('products', [ProductController::class, 'index']);
+    Route::get('products/{product}', [ProductController::class, 'show']);
+
 
     Route::prefix('admin')->group(function () {
 
 
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+
+            Route::middleware('role:super_admin')->group(function () {
+            });
 
             Route::middleware('role:product_manager|super_admin')->group(function () {
                 Route::apiResource('categories', AdminCategoryController::class);
@@ -55,7 +59,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('products/{product}/images', [AdminProductImageController::class, 'index']);
                 Route::get('products/{product}/images/{image}', [AdminProductImageController::class, 'show']);
             });
-            
+
 
             Route::middleware('role:user_manager|super_admin')->group(function () {
                 Route::apiResource('users', AdminUserController::class);
@@ -66,7 +70,14 @@ Route::prefix('v1')->group(function () {
                 Route::get('/roles/{roleId}', [AdminRolePermissionController::class, 'show']);
                 Route::post('/roles/{roleId}/add-permission', [AdminRolePermissionController::class, 'addPermission']);
                 Route::post('/roles/{roleId}/remove-permission', [AdminRolePermissionController::class, 'removePermission']);
-                Route::post('/request-role-permission', [AdminRolePermissionController::class, 'requestRolePermission']);
+                Route::post('/roles', [AdminRolePermissionController::class, 'store']);
+                Route::put('/roles/{roleId}', [AdminRolePermissionController::class, 'update']);
+                Route::delete('/roles/{roleId}', [AdminRolePermissionController::class, 'distroy']);
+
+                Route::get('/permissions', [AdminRolePermissionController::class, 'getPermissions']);
+                Route::post('/permissions', [AdminRolePermissionController::class, 'storePermission']);
+                Route::put('/permissions/{permissionId}', [AdminRolePermissionController::class, 'updatePermission']);
+                Route::delete('/permissions/{permissionId}', [AdminRolePermissionController::class, 'distroyPermission']);
             });
 
             Route::prefix('notifications')->group(function () {
